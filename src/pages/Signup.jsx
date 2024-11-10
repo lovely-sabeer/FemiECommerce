@@ -1,203 +1,215 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import axios from 'axios';
-import {  signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import auth from "../config";
+import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { app, db } from '../config';
+import { doc, setDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
-function Signup(props) {
-  const navigate = useNavigate();
-  const setUserList = props.setUserList;
 
-  const setGoogle=props.setGoogle;
+const Signup = () => {
+  const [errors, setErrors] = useState({});
+	const auth = getAuth(app);
+	const googleProvider = new GoogleAuthProvider();
+	const navigate = useNavigate();
 
-  const [euser, seteuser] = useState("");
-  const [epass, setepass] = useState("");
-  const [confirmPass, setConfirmPass] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [role, setRole] = useState("");
-  const [errors, setErrors] = useState({
-    username: false,
-    email: false,
-    password: false,
-    confirmPassword: false,
+
+	// Create Form
+	const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
   });
 
-  const nameRegex = /^[a-zA-Z]+$/;
-  const emailRegex = /^[a-zA-Z0-9]+@gmail\.com$/;
-  const passwordRegex = /^[a-zA-Z0-9]+$/;
+  // Validation function
+  const validate = (fieldValues = formData) => {
+    let temp = { ...errors };
 
-  const handleuser = (evt) => seteuser(evt.target.value);
-  const handlepass = (evt) => setepass(evt.target.value);
-  const handleconfirmpass = (evt) => setConfirmPass(evt.target.value);
-  const handleEmail = (evt) => setEmail(evt.target.value);
-  const handlePhoneNumber = (evt) => setPhoneNumber(evt.target.value);
-  const handleRole = (evt) => setRole(evt.target.value);
+    // Username validation
+    if ('username' in fieldValues)
+      temp.username = fieldValues.username ? '' : 'Username is required.';
 
-  const validateForm = () => {
-    const newErrors = {
-      username: !nameRegex.test(euser),
-      email: !emailRegex.test(email),
-      password: !passwordRegex.test(epass),
-      confirmPassword: epass !== confirmPass,
-    };
+    // Email validation
+    if ('email' in fieldValues)
+      temp.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldValues.email)
+        ? ''
+        : 'Email is not valid.';
 
-    setErrors(newErrors);
-    return !Object.values(newErrors).some((error) => error === true);
+    // Password validation
+    if ('password' in fieldValues)
+      temp.password = fieldValues.password.length > 5
+        ? ''
+        : 'Password must be at least 6 characters long.';
+
+    // Confirm password validation
+    if ('confirmPassword' in fieldValues)
+      temp.confirmPassword =
+        fieldValues.confirmPassword === formData.password
+          ? ''
+          : 'Passwords do not match.';
+
+    setErrors(temp);
+
+    // Check if all fields are valid
+    if (fieldValues === formData)
+      return Object.values(temp).every(x => x === '');
   };
 
-  
-  const addcheckuser = () => {
-    if (validateForm()) {
-      
-      axios.post("http://localhost:3001/User/signUp", {
-        userName: euser,
-        emailId: email,
-        password: epass,
-        confirmPassword: confirmPass,
-        phoneNumber: phoneNumber,
-      })
-      .then((data) => {
-        console.log("User data saved successfully to backend:", data.data);
-        setGoogle([{ 
-          userName: euser, 
-          emailId: email, 
-          password: epass, 
-          confirmPassword: confirmPass, 
-          phoneNumber: phoneNumber 
-        }]);
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Error saving user data to backend:", error);
-      });
-    }
-  };
-  
-
-
-  
-
-
-const handleGoogleSignIn = () => {
-  const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      const user = result.user;
-      console.log("User signed in with Google:", user);
-      
-      axios.post("http://localhost:3001/User/signUp", {
-        userName: user.displayName,
-        emailId: user.email,
-        password: "",
-        confirmPassword: "", 
-        phoneNumber: "", 
-      })
-      .then((data) => {
-        console.log("User data saved successfully to backend:", data.data);
-        setUserList([{ 
-          userName: user.displayName, 
-          emailId: user.email, 
-          password: "", 
-          confirmPassword: "", 
-          phoneNumber: "" 
-        }]);
-        navigate("/");
-      })
-      .catch((error) => {
-        console.error("Error saving user data to backend:", error);
-      });
-    })
-    .catch((error) => {
-      console.error("Error signing in with Google:", error);
+	// Get Data From Form
+  const handleChange = (e) => {
+		const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
     });
-};
+    validate({ [name]: value });
+  };
 
+	// Manual SignUp Submit
+  const handleSubmit = async(e) => {
+		e.preventDefault();
+		try {
+			if (validate()) {
+      // Submit form (send data to the server or handle it as needed)
+				await (createUserWithEmailAndPassword(auth, formData.email, formData.password));
+				const user = auth.currentUser;
+				
+				console.log(user);
+				if (user) {
+					await setDoc(doc(db, "userDetails", user.uid), {
+						email: user.email,
+						name: formData.username
+					});
+				}
+				navigate('/');
+				
+	    } else {
+	      alert('Please fix the errors before submitting.');
+	    }
+		} catch (error) {
+			console.log(error);
+			alert("not signed up");
+		}
+    
+	};
+	
+	// Google SignUp Submit
+  const handleGoogleSignup = async() => {
+		try {
+			await signInWithPopup(auth, googleProvider);
+			const user = auth.currentUser;
+			console.log(user);
+			if (user) {
+				await setDoc(doc(db, "userDetails", user.uid), {
+					email: user.email,
+					name: user.displayName
+				});
+			}
+		}
+		catch (error) {
+			console.error(error)
+		}
+  };
 
+	// Sign up page ui
   return (
-    <div className="bg-[#f8f9ff] h-screen flex justify-center items-center">
-      <div className="w-[350px] h-[550px] p-5 bg-white rounded-lg shadow-lg flex flex-col items-center justify-center relative">
-        <div className="absolute top-[-30px] left-1/2 transform -translate-x-1/2">
-          
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md w-96">
+        <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+
+        {/* Username */}
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Username</label>
+          <input
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className={`w-full p-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded`}
+            placeholder="Enter your username"
+          />
+          {errors.username && <span className="text-red-500 text-sm">{errors.username}</span>}
         </div>
-        <h1 className="font-thin text-[#1d1f2a] text-shadow-md font-montserrat tracking-wide text-2xl py-5">
-          WELCOME
-        </h1>
-        <div className="flex flex-col w-full gap-2 my-2">
-          <input
-            type="text"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Username"
-            onChange={handleuser}
-            value={euser}
-          />
-          {errors.username && <span className="text-red-500">Invalid username</span>}
 
+        {/* Email */}
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Email</label>
           <input
-            type="text"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Email"
-            onChange={handleEmail}
-            value={email}
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`w-full p-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded`}
+            placeholder="Enter your email"
           />
-          {errors.email && <span className="text-red-500">Invalid email</span>}
+          {errors.email && <span className="text-red-500 text-sm">{errors.email}</span>}
+        </div>
 
+        {/* Password */}
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Password</label>
           <input
             type="password"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Password"
-            onChange={handlepass}
-            value={epass}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            className={`w-full p-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded`}
+            placeholder="Enter your password"
           />
-          {errors.password && <span className="text-red-500">Invalid password</span>}
+          {errors.password && <span className="text-red-500 text-sm">{errors.password}</span>}
+        </div>
 
+        {/* Confirm Password */}
+        <div className="mb-6">
+          <label className="block text-gray-700 mb-2">Confirm Password</label>
           <input
             type="password"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Confirm Password"
-            onChange={handleconfirmpass}
-            value={confirmPass}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className={`w-full p-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded`}
+            placeholder="Confirm your password"
           />
-          {errors.confirmPassword && <span className="text-red-500">Passwords do not match</span>}
-
-          <input
-            type="text"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Phone Number"
-            onChange={handlePhoneNumber}
-            value={phoneNumber}
-          />
-
-          <input
-            type="text"
-            className="border rounded-md border-gray-300 p-2 w-full"
-            placeholder="Role"
-            onChange={handleRole}
-            value={role}
-          />
-
-          <button
-            className="w-full bg-[#1d1f2a] text-white rounded-md p-2 mt-2 cursor-pointer transition ease-in-out duration-300 hover:bg-[#333]"
-            onClick={addcheckuser}
-          >
-            Signup
-          </button>
-
-          
-          <button
-            className="w-full bg-red-500 text-white rounded-md p-2 mt-2 cursor-pointer transition ease-in-out duration-300 hover:bg-red-600"
-            onClick={handleGoogleSignIn}
-          >
-            Sign up with Google
-          </button>
+          {errors.confirmPassword && <span className="text-red-500 text-sm">{errors.confirmPassword}</span>}
         </div>
-        <p className="mt-4">
-          Already have an account? <Link to="/">Login</Link>
-        </p>
-      </div>
+
+        {/* Sign Up Button */}
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white font-bold py-2 rounded hover:bg-blue-600 transition duration-300"
+        >
+          Sign Up
+        </button>
+
+        {/* OR Divider */}
+        <div className="my-4 flex items-center justify-center">
+          <span className="border-b w-1/4 border-gray-300"></span>
+          <span className="mx-4 text-gray-500">OR</span>
+          <span className="border-b w-1/4 border-gray-300"></span>
+        </div>
+
+        {/* Google Sign Up Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          className="w-full bg-red-500 text-white font-bold py-2 rounded hover:bg-red-600 transition duration-300"
+        >
+          Sign Up with Google
+        </button>
+
+        {/* Already have an account? */}
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <span className="text-blue-500 hover:underline" onClick={()=>navigate("/")}>
+              Log in
+            </span>
+          </p>
+				</div>
+				
+      </form>
     </div>
-  );
-}
+	);
+	
+};
 
 export default Signup;

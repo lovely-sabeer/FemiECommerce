@@ -6,6 +6,6 @@
     .bg-cover {
       background-size: contain; /* Make sure the image is fully visible on smaller screens */
       height: 70vh; /* Adjust height for mobile views */
-    }
+    };
   }
   
