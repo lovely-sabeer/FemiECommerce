@@ -35,7 +35,7 @@ const LoginPage = () => {
 			}
 		}
 		)
-	}, [])
+	}, [auth, navigate])
 
 	// Google SignUp Submit
   const handleGoogleSignIn = async() => {

@@ -1,4 +1,4 @@
-import logo from "../assests/logo.avif";
+import logo from "../assets/logo.avif";
 
 function Footer() {
     return (

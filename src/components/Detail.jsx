@@ -1,5 +1,5 @@
 import { product, desc1 } from "../data";
-import pic11 from "../assests/pic11.webp";
+import pic11 from "../assets/pic11.webp";
 import Footer from "./Footer";
 
 function Detail() {
