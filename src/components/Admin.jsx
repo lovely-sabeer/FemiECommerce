@@ -5,7 +5,8 @@ import { db } from '../config';
 import { getDocs, collection } from "firebase/firestore";
 
 function Admin() {
-  const [bookings, setBookings] = useState([]);
+	const [bookings, setBookings] = useState([]);
+	// const [toggling, setToggling] = useState(true);
 
 	
 	
@@ -15,14 +16,14 @@ function Admin() {
 	    const ordersRef = collection(db, "orders");
 	    const querySnapshot = await getDocs(ordersRef);
 			setBookings(querySnapshot.docs.map(doc => doc.data()));
-			console.log(bookings)
+			// console.log(bookings)
 	  } catch (error) {
 	    console.error("Error fetching orders: ", error);
 	  }
 		}
 		fetchBookings();
 		console.log(bookings);
-  }, [bookings]);
+  }, []);
 
   return (
     <div>
@@ -66,7 +67,7 @@ function Admin() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="text-center py-4">No bookings available.</td>
+                    <td colSpan="8" className="text-center py-4" >No bookings available.</td>
                   </tr>
                 )}
               </tbody>
