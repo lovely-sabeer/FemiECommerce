@@ -16,7 +16,7 @@ function Admin() {
 	    const ordersRef = collection(db, "orders");
 	    const querySnapshot = await getDocs(ordersRef);
 			setBookings(querySnapshot.docs.map(doc => doc.data()));
-			// console.log(bookings)
+			console.log(bookings)
 	  } catch (error) {
 	    console.error("Error fetching orders: ", error);
 	  }
