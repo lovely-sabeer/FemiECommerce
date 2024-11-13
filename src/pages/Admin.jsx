@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navbar from "./Navbar";
+import Navbar from "../components/Navbar";
 // import axios from "axios";
 import { db } from '../config';
 import { getDocs, collection } from "firebase/firestore";
