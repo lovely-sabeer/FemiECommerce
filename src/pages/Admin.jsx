@@ -1,62 +1,54 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
-// import axios from "axios";
 import { db } from '../config';
 import { getDocs, collection } from "firebase/firestore";
 
 function Admin() {
-	const [bookings, setBookings] = useState([]);
-	// const [toggling, setToggling] = useState(true);
+  const [bookings, setBookings] = useState([]);
 
-	
-	
-	useEffect(() => {
-		const fetchBookings = async () => {
-			try {
-	    const ordersRef = collection(db, "orders");
-	    const querySnapshot = await getDocs(ordersRef);
-			setBookings(querySnapshot.docs.map(doc => doc.data()));
-			console.log(bookings)
-	  } catch (error) {
-	    console.error("Error fetching orders: ", error);
-	  }
-		}
-		fetchBookings();
-		console.log(bookings);
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const ordersRef = collection(db, "orders");
+        const querySnapshot = await getDocs(ordersRef);
+        setBookings(querySnapshot.docs.map(doc => doc.data()));
+        console.log(bookings);
+      } catch (error) {
+        console.error("Error fetching orders: ", error);
+      }
+    };
+    fetchBookings();
   }, []);
 
   return (
-    <div>
-      <div className="-mt-10 bg-[#EC9C1F]">
+    <div className="min-h-screen bg-gray-100">
+      <div className="bg-[#EC9C1F]">
         <Navbar />
       </div>
-      <div className="absolute bg-white"></div>
-
-      <div className="mt-10 p-8 relative bg-white">
-        <h2 className="text-xl font-bold mt-20">Admin Dashboard</h2>
+      <div className="container mx-auto px-4 py-8">
+        <h2 className="text-2xl font-bold text-center mt-8">Admin Dashboard</h2>
 
         <div className="mt-8">
           <h2 className="text-lg font-semibold mb-4">Booking Details</h2>
-          <div>
-            <table className="table-auto w-full">
+          
+          <div className="overflow-x-auto">
+            <table className="table-auto w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="px-4 py-2">User Name</th>
-                  {/* <th className="px-4 py-2">Email ID</th> */}
-                  <th className="px-4 py-2">Phone Number</th>
-                  <th className="px-4 py-2">Product Name</th>
-                  <th className="px-4 py-2">Quantity</th>
-                  <th className="px-4 py-2">Price</th>
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">status</th>
+                  <th className="px-4 py-2 border">User Name</th>
+                  <th className="px-4 py-2 border">Phone Number</th>
+                  <th className="px-4 py-2 border">Product Name</th>
+                  <th className="px-4 py-2 border">Quantity</th>
+                  <th className="px-4 py-2 border">Price</th>
+                  <th className="px-4 py-2 border">Date</th>
+                  <th className="px-4 py-2 border">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.length > 0 ? (
                   bookings.map((booking, index) => (
-                    <tr key={index}>
+                    <tr key={index} className="hover:bg-gray-100">
                       <td className="border px-4 py-2">{booking.userName}</td>
-                      {/* <td className="border px-4 py-2">{booking.userEmail}</td> */}
                       <td className="border px-4 py-2">{booking.phone}</td>
                       <td className="border px-4 py-2">{booking.productName}</td>
                       <td className="border px-4 py-2">{booking.quantity}</td>
@@ -67,7 +59,7 @@ function Admin() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="8" className="text-center py-4" >No bookings available.</td>
+                    <td colSpan="7" className="text-center py-4">No bookings available.</td>
                   </tr>
                 )}
               </tbody>

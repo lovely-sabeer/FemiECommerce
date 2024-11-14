@@ -14,7 +14,6 @@ const LoginPage = () => {
 	// Manual submit
   const handleSubmit = async(e) => {
     e.preventDefault();
-		// Handle form submission (e.g., send login data to backend)
 		try {
 			await signInWithEmailAndPassword(auth, email, password);
 			alert("login Successfully");
@@ -41,9 +40,9 @@ const LoginPage = () => {
   const handleGoogleSignIn = async() => {
 		try {
 			await signInWithPopup(auth, googleProvider);
-			const user = auth.currentUser;
-			console.log(user);
+			// const user = auth.currentUser;
 		}
+		
 		catch (error) {
 			console.error(error)
 		}
