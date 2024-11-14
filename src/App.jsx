@@ -25,31 +25,3 @@ function App() {
 }
 
 export default App
-
-
-
-
-
-
-
-
-
-
-	// 	<div className="bg-[#FFFFE4]">
-  //   <Namecontext.Provider value={{selectedSize,setSelectedSize,sizes,setsizes,userList,setUserList,setGoogle,goole}}>
-  //   <BrowserRouter>
-  //   <Routes>
-  //      <Route path="/home" element={<Home/>}></Route>
-  //      <Route path="/" element={<Login userList={userList} setUserList={setUserList} setGoogle={setGoogle}/>}></Route>
-  //       <Route path="/signup" element={<Signup userList={userList} setUserList={setUserList} setGoogle={setGoogle}/>}></Route>
-  //       <Route path="/admin" element={<Admin/>}></Route>
-  //       <Route path="" element={<Previous/>}></Route>
-  //      <Route element={<Aboutus/>}></Route>
-  //      <Route element={<Container/>}></Route>
-  //      <Route element={<Categories/>}></Route>
-  //      <Route element={<Footer/>}></Route>
-  //      <Route path="/shop" element={<Shop/>}></Route>
-  //      </Routes>
-  //      </BrowserRouter>
-  //      </Namecontext.Provider>
-		// </div>
